@@ -1,7 +1,32 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Orbitron:wght@400;500;600;700;800;900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-body {
-  @apply bg-slate-900;
+@layer base {
+  body {
+    @apply bg-space-black text-gray-100 font-sans antialiased overflow-x-hidden;
+    background-image:
+      radial-gradient(circle at 15% 50%, rgba(124, 58, 237, 0.08) 0%, transparent 25%),
+      radial-gradient(circle at 85% 30%, rgba(59, 130, 246, 0.08) 0%, transparent 25%);
+    background-attachment: fixed;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-display tracking-tight;
+  }
+}
+
+.glass-panel {
+  @apply bg-cosmic-glass backdrop-blur-md border border-white/10 shadow-xl;
+}
+
+.text-gradient {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-nebula-blue to-nebula-purple;
 }
