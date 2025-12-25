@@ -116,7 +116,7 @@ export function Home() {
             >
               <span className="text-white">Physics & Astronomy</span>
               <br />
-              <span className="text-gradient">Club, IIT Delhi</span>
+              <span className="text-nebula-blue">Club, IIT Delhi</span>
             </motion.h1>
 
             <motion.p

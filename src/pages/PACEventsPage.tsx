@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { Button } from '../components/ui/Button';
+import { ArrowLeft, Calendar, Image } from 'lucide-react';
 
 const backend_url = import.meta.env.VITE_BACKEND_URL;
 
@@ -10,12 +12,11 @@ export function PACEventsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Define TypeScript interfaces for better type safety
   interface Section {
     image?: string;
     heading: string;
     body: string;
-    image_gallery_album_id?: string; // Move this to section level if needed
+    image_gallery_album_id?: string;
   }
 
   interface Event {
@@ -24,13 +25,15 @@ export function PACEventsPage() {
     event_date: string;
     cover_image: string;
     sections: Section[];
+    heading?: string;
+    body?: string;
+    image_gallery_album_id?: string;
   }
 
-  // Helper to convert URLs in text to hyperlinks
   const linkify = (text: string) => {
     return text.split(/(https?:\/\/[^\s]+)/g).map((part, i) =>
       part.match(/^https?:\/\//)
-        ? <a key={i} href={part} target="_blank" rel="noopener noreferrer" className="text-blue-400 underline">{part}</a>
+        ? <a key={i} href={part} target="_blank" rel="noopener noreferrer" className="text-nebula-blue hover:text-nebula-purple underline decoration-dotted underline-offset-4 transition-colors">{part}</a>
         : part
     );
   };
@@ -60,109 +63,129 @@ export function PACEventsPage() {
     fetchEvent();
   }, [eventNumber]);
 
-  // Loading state component
   const LoadingSpinner = () => (
     <div className="flex items-center justify-center min-h-screen">
-      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500" />
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-nebula-purple" />
     </div>
   );
 
-  // Error state component
   const ErrorDisplay = () => (
-    <div className="flex items-center justify-center min-h-screen text-red-500">
-      Error: {error || 'Event not found'}
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="glass-panel p-6 text-red-400">
+        Error: {error || 'Event not found'}
+      </div>
     </div>
   );
 
-  // Render loading state
   if (loading) return <LoadingSpinner />;
-
-  // Render error state
   if (error || !event) return <ErrorDisplay />;
 
   return (
-    <div className="pt-24 pb-16 px-4">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen pt-24 pb-16 px-4 relative">
+      <div className="max-w-5xl mx-auto">
+        <Link to="/pac-events" className="inline-flex items-center text-gray-400 hover:text-white mb-8 transition-colors group">
+          <ArrowLeft className="h-4 w-4 mr-2 group-hover:-translate-x-1 transition-transform" />
+          Back to Events
+        </Link>
+
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           transition={{ duration: 0.5 }}
+          className="glass-panel rounded-3xl overflow-hidden"
         >
-          {/* Cover image with left alignment */}
-          <div className="mb-12 flex justify-start">
+          {/* Hero Image */}
+          <div className="relative h-[40vh] md:h-[50vh]">
             <img
               src={`${backend_url}${event.cover_image}`}
               alt={event.title}
-              className="max-h-[80vh] object-contain rounded-lg shadow-lg"
-              loading="lazy"
+              className="w-full h-full object-cover"
             />
+            <div className="absolute inset-0 bg-gradient-to-t from-space-black via-space-black/50 to-transparent" />
+
+            <div className="absolute bottom-0 left-0 p-8 md:p-12 w-full">
+              <div className="inline-flex items-center px-4 py-2 rounded-full bg-nebula-purple/20 backdrop-blur-md border border-nebula-purple/30 text-nebula-purple mb-4">
+                <Calendar className="h-4 w-4 mr-2" />
+                <span className="font-medium text-sm">{event.event_date}</span>
+              </div>
+              <h1 className="text-4xl md:text-6xl font-bold font-display leading-tight text-white mb-2">{event.title}</h1>
+            </div>
           </div>
 
-          {/* Content section */}
-          <div className="max-w-4xl mx-auto">
-            <h1 className="text-4xl font-bold mb-4">{event.title}</h1>
-            <p className="text-purple-400 mb-12">
-              Event #{event.event_number} - {event.event_date}
-            </p>
-
-            {/* Handle legacy events that don't have sections */}
+          <div className="p-8 md:p-12 space-y-12">
+            {/* Sections */}
             {event.sections ? (
-              // Sections exist, render them
               [...event.sections].reverse().map((section, index) => (
                 <motion.div
                   key={index}
                   initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
                   transition={{ delay: index * 0.1 }}
-                  className="mb-16"
+                  className="space-y-6"
                 >
+                  {section.heading && (
+                    <h2 className="text-3xl font-bold font-display text-white relative inline-block">
+                      {section.heading}
+                      <div className="absolute -bottom-2 left-0 w-1/3 h-1 bg-nebula-blue rounded-full" />
+                    </h2>
+                  )}
+
+                  {section.body && (
+                    <div className="prose prose-invert prose-lg max-w-none text-gray-300">
+                      <p className="whitespace-pre-wrap leading-relaxed">
+                        {linkify(section.body)}
+                      </p>
+                    </div>
+                  )}
+
                   {section.image && (
-                    <div className="mb-6 flex justify-start">
+                    <div className="rounded-2xl overflow-hidden glass-panel p-2">
                       <img
                         src={`${backend_url}${section.image}`}
                         alt={section.heading}
-                        className="max-h-[500px] object-contain rounded-lg"
+                        className="w-full h-auto rounded-xl max-h-[600px] object-contain bg-black/20"
                       />
                     </div>
                   )}
-                  {section.heading && (
-                    <h2 className="text-2xl font-semibold mb-4">{section.heading}</h2>
-                  )}
-                  {section.body && (
-                    <p className="text-gray-300 whitespace-pre-wrap">
-                      {linkify(section.body)}
-                    </p>
+
+                  {/* Image Gallery Link (Section Level) */}
+                  {section.image_gallery_album_id && (
+                    <div className="pt-4">
+                      <Button to={`/gallery/${section.image_gallery_album_id}`} variant="secondary">
+                        <Image className="h-4 w-4 mr-2" /> View Gallery Album
+                      </Button>
+                    </div>
                   )}
                 </motion.div>
               ))
             ) : (
-              // Legacy event format - render heading/body from top level
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="mb-16"
+                className="space-y-6"
               >
-                {event.heading && (
-                  <h2 className="text-2xl font-semibold mb-4">{event.heading}</h2>
-                )}
+                {event.heading && <h2 className="text-3xl font-bold font-display">{event.heading}</h2>}
                 {event.body && (
-                  <p className="text-gray-300 whitespace-pre-wrap">
-                    {linkify(event.body)}
-                  </p>
+                  <div className="prose prose-invert prose-lg max-w-none text-gray-300">
+                    <p className="whitespace-pre-wrap leading-relaxed">{linkify(event.body)}</p>
+                  </div>
                 )}
               </motion.div>
             )}
 
-            {/* Image Gallery Link (if album ID exists) */}
+            {/* Main Event Gallery Link */}
             {event.image_gallery_album_id && (
-              <div className="mt-8">
-                <a
-                  href={`/gallery/${event.image_gallery_album_id}`}
-                  className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg inline-block"
-                >
-                  View Event Gallery
-                </a>
+              <div className="border-t border-white/10 pt-8 mt-12">
+                <div className="bg-gradient-to-r from-nebula-blue/10 to-transparent p-6 rounded-2xl border border-nebula-blue/20 flex flex-col md:flex-row items-center justify-between gap-4">
+                  <div>
+                    <h3 className="text-xl font-bold text-white mb-2">View Event Photos</h3>
+                    <p className="text-gray-400">Check out the complete photo album from this event</p>
+                  </div>
+                  <Button to={`/gallery/${event.image_gallery_album_id}`} variant="primary">
+                    <Image className="h-4 w-4 mr-2" /> Open Gallery
+                  </Button>
+                </div>
               </div>
             )}
           </div>
